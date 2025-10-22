@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxspeed Navigator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #0088cc;
+            --secondary: #00cc88;
+            --luxspeed-yellow: #FFD700;
+            --luxspeed-orange: #FF8C00;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--luxspeed-yellow), var(--luxspeed-orange));
+            color: #333;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 300px;
+        }
+        
+        .route-info {
+            background: white;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--luxspeed-orange);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--luxspeed-yellow), var(--luxspeed-orange));
+            color: #333;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        
+        .location-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .location-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid var(--luxspeed-yellow);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .location-btn:hover {
+            background: var(--luxspeed-yellow);
+        }
+        
+        .route-details {
+            display: none;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .driver-marker {
+            background: var(--luxspeed-yellow);
+            border: 3px solid var(--luxspeed-orange);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .customer-marker {
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .custom-popup {
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .driver-popup {
+            background: linear-gradient(135deg, var(--luxspeed-yellow), var(--luxspeed-orange));
+            color: #333;
+        }
+        
+        .customer-popup {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .navigation-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .nav-btn {
+            padding: 12px 15px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover {
+            background: #f8f9fa;
+        }
+        
+        .nav-btn:not(:last-child) {
+            border-bottom: 1px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-map-marked-alt"></i>
+                Luxspeed Navigator
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <div class="navigation-controls">
+                <button class="nav-btn" onclick="locateUser()">
+                    <i class="fas fa-location-arrow"></i>
+                    Joylashuv
+                </button>
+                <button class="nav-btn" onclick="clearRoute()">
+                    <i class="fas fa-trash"></i>
+                    Tozalash
+                </button>
+                <button class="nav-btn" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i>
+                    Katta ekran
+                </button>
+            </div>
+            
+            <div class="controls">
+                <h3 style="margin-bottom: 15px; color: #333;">Navigator</h3>
+                
+                <div class="form-group">
+                    <label>Qayerdan:</label>
+                    <input type="text" id="fromLocation" class="form-control" placeholder="Boshlang'ich manzil">
+                </div>
+                
+                <div class="form-group">
+                    <label>Qayerga:</label>
+                    <input type="text" id="toLocation" class="form-control" placeholder="Yo'nalish manzili">
+                </div>
+                
+                <div class="location-buttons">
+                    <button class="location-btn" onclick="useCurrentLocation('from')">
+                        <i class="fas fa-crosshairs"></i>
+                        Hozirgi joy
+                    </button>
+                    <button class="location-btn" onclick="useCurrentLocation('to')">
+                        <i class="fas fa-crosshairs"></i>
+                        Hozirgi joy
+                    </button>
+                </div>
+                
+                <button class="btn btn-primary" onclick="calculateRoute()" style="margin-top: 10px;">
+                    <i class="fas fa-route"></i>
+                    Yo'nalishni topish
+                </button>
+                
+                <div id="popularLocations" style="margin-top: 15px; display: none;">
+                    <h4 style="margin-bottom: 10px; color: #333;">Tezkor manzillar:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        <button class="location-btn" onclick="setPopularLocation('Toshkent markazi')">Toshkent markazi</button>
+                        <button class="location-btn" onclick="setPopularLocation('Havo terminali')">Havo terminali</button>
+                        <button class="location-btn" onclick="setPopularLocation('Chorsu bozori')">Chorsu</button>
+                        <button class="location-btn" onclick="setPopularLocation('Amir Temur maydoni')">Amir Temur</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="route-info" id="routeInfo">
+                <div id="routeSummary">
+                    Yo'nalishni tanlang
+                </div>
+                <div class="route-details" id="routeDetails">
+                    <div class="detail-item">
+                        <span>Masofa:</span>
+                        <strong id="routeDistance">-</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Vaqt:</span>
+                        <strong id="routeTime">-</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Taxminiy narx:</span>
+                        <strong id="routePrice">-</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Xarita va global o'zgaruvchilar
+        let map;
+        let currentRoute;
+        let userMarker;
+        let driverMarkers = [];
+        let customerMarkers = [];
+        
+        // O'zbekiston shaharlari koordinatalari
+        const uzbekistanCities = {
+            'Toshkent': [41.311081, 69.240562],
+            'Samarqand': [39.654167, 66.959722],
+            'Buxoro': [39.768083, 64.455576],
+            'Xiva': [41.384083, 60.361694],
+            'Andijon': [40.783333, 72.333333],
+            'Fargʻona': [40.386389, 71.786389],
+            'Namangan': [40.998299, 71.672569],
+            'Qarshi': [38.861667, 65.789722],
+            'Nukus': [42.464867, 59.614529],
+            'Termiz': [37.224167, 67.278333],
+            'Navoiy': [40.084167, 65.379167],
+            'Jizzax': [40.115833, 67.842222],
+            'Guliston': [40.489167, 68.784167],
+            'Urganch': [41.550000, 60.633333]
+        };
+
+        // Xaritani ishga tushirish
+        function initMap() {
+            // Xaritani yaratish (O'zbekiston markazi)
+            map = L.map('map').setView([41.311081, 69.240562], 12);
+            
+            // OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+            
+            // Luxspeed maxsus tile layer (sariq rangli)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© CartoDB',
+                maxZoom: 18
+            }).addTo(map);
+            
+            // GPS kuzatuv
+            map.locate({setView: true, maxZoom: 16});
+            
+            // Foydalanuvchi joylashuvini kuzatish
+            map.on('locationfound', onLocationFound);
+            map.on('locationerror', onLocationError);
+            
+            // Test ma'lumotlari
+            addTestDrivers();
+            showPopularLocations();
+        }
+
+        // Foydalanuvchi joylashuvi topilganda
+        function onLocationFound(e) {
+            const radius = e.accuracy;
+            
+            if (!userMarker) {
+                userMarker = L.marker(e.latlng)
+                    .addTo(map)
+                    .bindPopup("Sizning joylashuvingiz")
+                    .openPopup();
+                
+                L.circle(e.latlng, radius).addTo(map);
+            } else {
+                userMarker.setLatLng(e.latlng);
+            }
+            
+            // Avtomatik to'ldirish
+            document.getElementById('fromLocation').value = "Hozirgi joylashuv";
+            updateAddressFromCoordinates(e.latlng.lat, e.latlng.lng, 'from');
+        }
+
+        // GPS xatosi
+        function onLocationError(e) {
+            alert("GPS joylashuvni aniqlay olmadi: " + e.message);
+            
+            // Test ma'lumotlari
+            document.getElementById('fromLocation').value = "Toshkent shahri";
+        }
+
+        // Hozirgi joylashuvdan foydalanish
+        function useCurrentLocation(type) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (type === 'from') {
+                            document.getElementById('fromLocation').value = "Hozirgi joylashuv";
+                            updateAddressFromCoordinates(lat, lng, 'from');
+                        } else {
+                            document.getElementById('toLocation').value = "Hozirgi joylashuv";
+                            updateAddressFromCoordinates(lat, lng, 'to');
+                        }
+                    },
+                    function(error) {
+                        alert("Joylashuvni olishda xatolik: " + error.message);
+                    }
+                );
+            } else {
+                alert("GPS qo'llab-quvvatlanmaydi");
+            }
+        }
+
+        // Koordinatalardan manzil olish
+        function updateAddressFromCoordinates(lat, lng, type) {
+            // Reverse geocoding uchun Nominatim API
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        const address = data.display_name.split(',').slice(0, 3).join(',');
+                        if (type === 'from') {
+                            document.getElementById('fromLocation').value = address;
+                        } else {
+                            document.getElementById('toLocation').value = address;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Manzilni olishda xatolik:', error);
+                });
+        }
+
+        // Yo'nalishni hisoblash
+        function calculateRoute() {
+            const from = document.getElementById('fromLocation').value;
+            const to = document.getElementById('toLocation').value;
+            
+            if (!from || !to) {
+                alert("Iltimos, manzillarni kiriting!");
+                return;
+            }
+            
+            // Geocoding - manzillarni koordinataga aylantirish
+            Promise.all([
+                geocodeAddress(from),
+                geocodeAddress(to)
+            ]).then(([fromCoords, toCoords]) => {
+                if (fromCoords && toCoords) {
+                    drawRoute(fromCoords, toCoords);
+                } else {
+                    alert("Manzillarni topishda xatolik!");
+                }
+            });
+        }
+
+        // Manzilni koordinataga aylantirish
+        function geocodeAddress(address) {
+            return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=uz`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                    }
+                    return null;
+                })
+                .catch(error => {
+                    console.log('Geocoding xatosi:', error);
+                    return null;
+                });
+        }
+
+        // Yo'nalish chizish
+        function drawRoute(fromCoords, toCoords) {
+            // Oldingi yo'nalishni tozalash
+            if (currentRoute) {
+                map.removeLayer(currentRoute);
+            }
+            
+            // Yo'nalish chizish (soddalashtirilgan)
+            currentRoute = L.polyline([fromCoords, toCoords], {
+                color: '#FF8C00',
+                weight: 6,
+                opacity: 0.8,
+                lineJoin: 'round'
+            }).addTo(map);
+            
+            // Markerlarni qo'shish
+            L.marker(fromCoords, {
+                icon: L.divIcon({
+                    className: 'customer-marker',
+                    html: '<i class="fas fa-user"></i>',
+                    iconSize: [20, 20]
+                })
+            }).addTo(map).bindPopup("Boshlang'ich manzil", {className: 'customer-popup'});
+            
+            L.marker(toCoords, {
+                icon: L.divIcon({
+                    className: 'customer-marker',
+                    html: '<i class="fas fa-flag"></i>',
+                    iconSize: [20, 20]
+                })
+            }).addTo(map).bindPopup("Yo'nalish manzili", {className: 'customer-popup'});
+            
+            // Xaritani markazlashtirish
+            map.fitBounds([fromCoords, toCoords]);
+            
+            // Masofa va vaqtni hisoblash
+            calculateRouteDetails(fromCoords, toCoords);
+        }
+
+        // Yo'nalish tafsilotlarini hisoblash
+        function calculateRouteDetails(fromCoords, toCoords) {
+            // Havo masofasi (km)
+            const distance = calculateDistance(fromCoords[0], fromCoords[1], toCoords[0], toCoords[1]);
+            
+            // Taxminiy vaqt (soat:daqiqa)
+            const timeMinutes = Math.round(distance * 2.5); // O'rtacha 40 km/soat
+            const timeFormatted = `${Math.floor(timeMinutes / 60)} soat ${timeMinutes % 60} daqiqa`;
+            
+            // Taxminiy narx (1 km = 2000 so'm)
+            const price = Math.round(distance * 2000);
+            
+            // Natijalarni ko'rsatish
+            document.getElementById('routeSummary').textContent = "Yo'nalish topildi";
+            document.getElementById('routeDistance').textContent = distance.toFixed(1) + ' km';
+            document.getElementById('routeTime').textContent = timeFormatted;
+            document.getElementById('routePrice').textContent = price.toLocaleString() + ' soʻm';
+            
+            document.getElementById('routeDetails').style.display = 'block';
+        }
+
+        // Havo masofasini hisoblash
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Yer radiusi km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Test haydovchilarni qo'shish
+        function addTestDrivers() {
+            const testDrivers = [
+                { lat: 41.311081, lng: 69.240562, name: "Akmal Joʻrayev", car: "Nexia 3" },
+                { lat: 41.315081, lng: 69.245562, name: "Dilshod Rahimov", car: "Cobalt" },
+                { lat: 41.308081, lng: 69.235562, name: "Sardor Tursunov", car: "Gentra" },
+                { lat: 41.320081, lng: 69.250562, name: "Javohir Hasanov", car: "Malibu" }
+            ];
+            
+            testDrivers.forEach(driver => {
+                const marker = L.marker([driver.lat, driver.lng], {
+                    icon: L.divIcon({
+                        className: 'driver-marker',
+                        html: '<i class="fas fa-car"></i>',
+                        iconSize: [25, 25]
+                    })
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div class="custom-popup driver-popup">
+                        <strong>🚕 ${driver.name}</strong><br>
+                        ${driver.car}<br>
+                        <small>Luxspeed Haydovchi</small>
+                    </div>
+                `);
+                
+                driverMarkers.push(marker);
+            });
+        }
+
+        // Tezkor manzillarni ko'rsatish
+        function showPopularLocations() {
+            document.getElementById('popularLocations').style.display = 'block';
+        }
+
+        // Tezkor manzilni tanlash
+        function setPopularLocation(location) {
+            document.getElementById('toLocation').value = location;
+        }
+
+        // Foydalanuvchini joylashtirish
+        function locateUser() {
+            map.locate({setView: true, maxZoom: 16});
+        }
+
+        // Yo'nalishni tozalash
+        function clearRoute() {
+            if (currentRoute) {
+                map.removeLayer(currentRoute);
+                currentRoute = null;
+            }
+            
+            // Markerlarni tozalash
+            driverMarkers.forEach(marker => map.removeLayer(marker));
+            customerMarkers.forEach(marker => map.removeLayer(marker));
+            
+            driverMarkers = [];
+            customerMarkers = [];
+            
+            // Ma'lumotlarni tozalash
+            document.getElementById('routeSummary').textContent = "Yo'nalishni tanlang";
+            document.getElementById('routeDetails').style.display = 'none';
+            
+            // Test haydovchilarni qayta qo'shish
+            addTestDrivers();
+        }
+
+        // Katta ekran rejimi
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // O'zbekiston shaharlarini xaritada ko'rsatish
+        function showUzbekistanCities() {
+            Object.entries(uzbekistanCities).forEach(([city, coords]) => {
+                L.marker(coords)
+                    .addTo(map)
+                    .bindPopup(`<strong>${city}</strong><br>O'zbekiston`)
+                    .openPopup();
+            });
+        }
+
+        // Xaritani ishga tushirish
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            
+            // URL parametrlarini o'qish
+            const urlParams = new URLSearchParams(window.location.search);
+            const from = urlParams.get('from');
+            const to = urlParams.get('to');
+            
+            if (from) document.getElementById('fromLocation').value = from;
+            if (to) document.getElementById('toLocation').value = to;
+            
+            // Agar ikkala manzil ham mavjud bo'lsa, avtomatik yo'nalish hisoblash
+            if (from && to) {
+                setTimeout(() => calculateRoute(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>
