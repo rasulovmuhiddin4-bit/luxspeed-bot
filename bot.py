@@ -235,6 +235,61 @@ async def admin_contact(message: Message):
         )
     
     await message.answer(text)
+    
+# ... (oldingi kodlar o'zgarmaydi)
+
+# Admin bilan aloqa handler
+@dp.message(F.text.in_(["👨‍💻 Admin bilan aloqa", "👨‍💻 Связь с администратором"]))
+async def admin_contact_button(message: Message):
+    user_id = message.from_user.id
+    user_data = users_db.get(user_id)
+    
+    if not user_data:
+        await start_command(message)
+        return
+    
+    language = user_data.get('language', 'uz')
+    
+    if language == 'uz':
+        text = (
+            f"👨‍💻 Admin bilan aloqa:\n\n"
+            f"📞 Telegram: {ADMIN_USERNAME}\n"
+            f"🆔 Admin ID: {ADMIN_ID}\n\n"
+            f"🆘 Yordam kerak bo'lsa, admin bilan bog'laning.\n"
+            f"📝 Savol, taklif yoki shikoyatlaringiz bo'lsa yozib qoldiring."
+        )
+    else:
+        text = (
+            f"👨‍💻 Связь с администратором:\n\n"
+            f"📞 Telegram: {ADMIN_USERNAME}\n"
+            f"🆔 Admin ID: {ADMIN_ID}\n\n"
+            f"🆘 Если нужна помощь, свяжитесь с администратором.\n"
+            f"📝 Если у вас есть вопросы, предложения или жалобы, напишите."
+        )
+    
+    # Keyboard qaytarish
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🏠 Asosiy menyu" if language == 'uz' else "🏠 Главное меню")]
+        ],
+        resize_keyboard=True
+    )
+    
+    await message.answer(text, reply_markup=keyboard)
+
+# Asosiy menyuga qaytish
+@dp.message(F.text.in_(["🏠 Asosiy menyu", "🏠 Главное меню"]))
+async def back_to_main_menu(message: Message):
+    user_id = message.from_user.id
+    user_data = users_db.get(user_id)
+    
+    if not user_data:
+        await start_command(message)
+        return
+    
+    await redirect_to_webapp(message, user_data)
+
+# ... (qolgan kodlar o'zgarmaydi)    
 
 # WebApp dan kelgan ma'lumotlarni qayta ishlash
 @dp.message(F.web_app_data)
