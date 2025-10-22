@@ -23,6 +23,7 @@
             --danger: #e74c3c;
             --success: #2ecc71;
             --warning: #f39c12;
+            --info: #17a2b8;
         }
         
         body {
@@ -136,7 +137,17 @@
         }
         
         .btn-info {
-            background: var(--primary);
+            background: var(--info);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--gray);
             color: white;
         }
         
@@ -150,6 +161,11 @@
             align-items: center;
             color: var(--gray);
             position: relative;
+            overflow: hidden;
+        }
+        
+        .map-placeholder {
+            text-align: center;
         }
         
         .driver-info {
@@ -227,6 +243,14 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             max-width: 90%;
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
         }
         
         .language-selector {
@@ -330,6 +354,110 @@
             color: white;
             margin-top: 10px;
         }
+        
+        .card-payment-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #e9ecef;
+        }
+        
+        .card-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .card-icon {
+            width: 50px;
+            height: 30px;
+            background: #fff;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+        
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .star {
+            font-size: 30px;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .star.active {
+            color: #ffcc00;
+        }
+        
+        .order-status {
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status-searching {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-accepted {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-arrived {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-completed {
+            background: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .driver-actions {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .driver-action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .location-info {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -354,8 +482,9 @@
         
         <div class="tabs">
             <div class="tab active" data-tab="order">Taksi chaqirish</div>
+            <div class="tab" data-tab="active">Faol buyurtma</div>
             <div class="tab" data-tab="history">Tarix</div>
-            <div class="tab" data-tab="admin">Admin bilan aloqa</div>
+            <div class="tab" data-tab="admin">Admin</div>
             <div class="tab" data-tab="profile">Profil</div>
         </div>
         
@@ -379,7 +508,7 @@
                 
                 <div class="form-group">
                     <label id="fromLabel">Qayerdan</label>
-                    <input type="text" id="fromLocation" class="form-control" placeholder="Manzilingiz">
+                    <input type="text" id="fromLocation" class="form-control" placeholder="Manzilingiz" value="Toshkent shahri">
                 </div>
                 
                 <div class="form-group">
@@ -398,14 +527,91 @@
                     </div>
                 </div>
                 
+                <!-- Karta to'lov formasi -->
+                <div class="card-payment-form hidden" id="cardPaymentForm">
+                    <h4 style="text-align: center; margin-bottom: 15px;">Karta ma'lumotlari</h4>
+                    
+                    <div class="card-icons">
+                        <div class="card-icon" style="color: #00a8ff;">HUMO</div>
+                        <div class="card-icon" style="color: #00a86b;">Uzcard</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Karta raqami</label>
+                        <input type="text" id="cardNumber" class="form-control" placeholder="8600 1234 5678 9012" maxlength="19">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Amal qilish muddati</label>
+                            <input type="text" id="cardExpiry" class="form-control" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>CVV</label>
+                            <input type="text" id="cardCvv" class="form-control" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="map-container">
-                    <i class="fas fa-map-marker-alt" style="font-size: 40px; color: var(--primary);"></i>
-                    <p id="mapText">Joylashuv xaritasi</p>
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marker-alt" style="font-size: 40px; color: var(--primary);"></i>
+                        <p id="mapText">Joylashuv xaritasi</p>
+                        <small>GPS: 41.311081, 69.240562</small>
+                    </div>
                 </div>
                 
                 <button class="btn btn-success" id="orderBtn">
                     <i class="fas fa-taxi"></i>
                     <span id="orderText">Taksi chaqirish</span>
+                </button>
+                
+                <button class="btn btn-secondary back-to-main" id="customerBackToMainBtn">
+                    <i class="fas fa-home"></i>
+                    <span>Asosiy menyuga qaytish</span>
+                </button>
+            </div>
+            
+            <!-- Faol buyurtma -->
+            <div class="tab-content" id="active-tab">
+                <div class="welcome">
+                    <h2>Joriy buyurtma</h2>
+                    <p>Buyurtma holatini kuzatishingiz mumkin</p>
+                </div>
+                
+                <div class="order-status status-searching" id="orderStatus">
+                    🚕 Haydovchi qidirilmoqda...
+                </div>
+                
+                <div class="location-info">
+                    <h4><i class="fas fa-map-marker-alt"></i> Manzil ma'lumotlari</h4>
+                    <p><strong>Qayerdan:</strong> <span id="activeFromLocation">-</span></p>
+                    <p><strong>Qayerga:</strong> <span id="activeToLocation">-</span></p>
+                    <p><strong>Narx:</strong> <span id="activePrice">-</span></p>
+                </div>
+                
+                <div class="driver-info hidden" id="driverInfo">
+                    <div class="driver-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 id="assignedDriverName">Haydovchi</h4>
+                        <p id="assignedDriverCar">Mashina: -</p>
+                        <p id="assignedDriverPhone">Telefon: -</p>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <i class="fas fa-car" style="font-size: 40px; color: var(--primary);"></i>
+                        <p>Haydovchi yo'lda...</p>
+                        <small>Kutilayotgan vaqt: 5-7 daqiqa</small>
+                    </div>
+                </div>
+                
+                <button class="btn btn-warning hidden" id="cancelOrderBtn">
+                    <i class="fas fa-times"></i>
+                    <span>Buyurtmani bekor qilish</span>
                 </button>
             </div>
             
@@ -436,10 +642,6 @@
                         <span id="contactAdminText">Admin bilan bog'lanish</span>
                     </button>
                 </div>
-                
-                <div class="admin-alert">
-                    <p><i class="fas fa-info-circle"></i> Savol, taklif yoki shikoyatlaringiz bo'lsa, admin bilan bog'lanishingiz mumkin</p>
-                </div>
             </div>
             
             <!-- Profil -->
@@ -456,6 +658,7 @@
                     <div>
                         <h4 id="userName">Foydalanuvchi</h4>
                         <p id="userPhone">Telefon: -</p>
+                        <p>Reyting: ⭐⭐⭐⭐⭐</p>
                     </div>
                 </div>
                 
@@ -468,12 +671,7 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-primary" id="supportBtn">
-                    <i class="fas fa-headset"></i>
-                    <span id="supportText">Qo'llab-quvvatlash</span>
-                </button>
-                
-                <button class="btn btn-primary back-to-main" id="backToMainBtn">
+                <button class="btn btn-secondary back-to-main" id="backToMainBtn">
                     <i class="fas fa-home"></i>
                     <span id="backToMainText">Asosiy menyuga qaytish</span>
                 </button>
@@ -492,8 +690,9 @@
         
         <div class="tabs">
             <div class="tab driver-tab active" data-tab="driver-main">Asosiy</div>
-            <div class="tab driver-tab" data-tab="driver-orders">Buyurtmalar</div>
-            <div class="tab driver-tab" data-tab="driver-admin">Admin bilan aloqa</div>
+            <div class="tab driver-tab" data-tab="driver-active">Faol buyurtma</div>
+            <div class="tab driver-tab" data-tab="driver-orders">Tarix</div>
+            <div class="tab driver-tab" data-tab="driver-admin">Admin</div>
             <div class="tab driver-tab" data-tab="driver-profile">Profil</div>
         </div>
         
@@ -513,24 +712,90 @@
                         <h4 id="driverName">Haydovchi</h4>
                         <p id="driverCar">Mashina: -</p>
                         <p id="driverStatus">Holat: Faol</p>
+                        <p>Reyting: ⭐⭐⭐⭐☆ (4.2)</p>
                     </div>
                 </div>
                 
+                <div class="form-group">
+                    <label>Mashina raqami</label>
+                    <input type="text" id="carNumber" class="form-control" placeholder="01 A 123 AA">
+                </div>
+                
+                <div class="form-group">
+                    <label>Mashina modeli</label>
+                    <input type="text" id="carModel" class="form-control" placeholder="Nexia 3">
+                </div>
+                
                 <div class="map-container">
-                    <i class="fas fa-map-marker-alt" style="font-size: 40px; color: #ff9900;"></i>
-                    <p id="driverMapText">Joylashuv xaritasi</p>
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marker-alt" style="font-size: 40px; color: #ff9900;"></i>
+                        <p id="driverMapText">Joylashuv xaritasi</p>
+                        <small>GPS: 41.311081, 69.240562</small>
+                    </div>
                 </div>
                 
                 <button class="btn btn-driver" id="findCustomerBtn">
                     <i class="fas fa-user-plus"></i>
                     <span id="findCustomerText">Mijoz qidirish</span>
                 </button>
+                
+                <button class="btn btn-secondary back-to-main" id="driverMainBackBtn">
+                    <i class="fas fa-home"></i>
+                    <span>Asosiy menyuga qaytish</span>
+                </button>
             </div>
             
-            <!-- Buyurtmalar -->
+            <!-- Faol buyurtma -->
+            <div class="tab-content" id="driver-active-tab">
+                <div class="welcome driver-welcome">
+                    <h2>Faol buyurtma</h2>
+                    <p>Buyurtma bajarilishi</p>
+                </div>
+                
+                <div class="order-status status-accepted">
+                    ✅ Buyurtma qabul qilindi
+                </div>
+                
+                <div class="customer-info">
+                    <h4><i class="fas fa-user"></i> Mijoz ma'lumotlari</h4>
+                    <p><strong>Ism:</strong> <span id="activeCustomerName">Ali Valiyev</span></p>
+                    <p><strong>Telefon:</strong> <span id="activeCustomerPhone">+998901234567</span></p>
+                    <p><strong>Manzil:</strong> <span id="activeCustomerLocation">Chorsu bozori</span></p>
+                    <p><strong>Yo'nalish:</strong> <span id="activeCustomerDestination">Amir Temur maydoni</span></p>
+                    <p><strong>Narx:</strong> <span id="activeOrderPrice">15,000 so'm</span></p>
+                </div>
+                
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <i class="fas fa-road" style="font-size: 40px; color: #ff9900;"></i>
+                        <p>Yo'nalish xaritasi</p>
+                        <small>Masofa: 3.2 km | Vaqt: 12 daqiqa</small>
+                    </div>
+                </div>
+                
+                <div class="driver-actions">
+                    <button class="driver-action-btn" style="background: var(--success); color: white;" id="arrivedBtn">
+                        <i class="fas fa-check"></i> Oldim
+                    </button>
+                    <button class="driver-action-btn" style="background: var(--warning); color: white;" id="startTripBtn">
+                        <i class="fas fa-play"></i> Yo'lga chiqdim
+                    </button>
+                    <button class="driver-action-btn" style="background: var(--danger); color: white;" id="cancelTripBtn">
+                        <i class="fas fa-times"></i> Bekor qilish
+                    </button>
+                </div>
+                
+                <div class="driver-actions hidden" id="tripActions">
+                    <button class="driver-action-btn" style="background: var(--success); color: white;" id="completeTripBtn">
+                        <i class="fas fa-flag-checkered"></i> Yakunlandi
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Buyurtmalar tarixi -->
             <div class="tab-content" id="driver-orders-tab">
                 <div class="welcome driver-welcome">
-                    <h2 id="ordersTitle">Buyurtmalar</h2>
+                    <h2 id="ordersTitle">Buyurtmalar tarixi</h2>
                     <p id="ordersSubtitle">Bajarilgan buyurtmalar</p>
                 </div>
                 <div id="ordersList">
@@ -554,10 +819,6 @@
                         <span id="driverContactAdminText">Admin bilan bog'lanish</span>
                     </button>
                 </div>
-                
-                <div class="admin-alert">
-                    <p><i class="fas fa-info-circle"></i> Savol, taklif yoki shikoyatlaringiz bo'lsa, admin bilan bog'lanishingiz mumkin</p>
-                </div>
             </div>
             
             <!-- Profil -->
@@ -575,6 +836,8 @@
                         <h4 id="profileDriverName">Haydovchi</h4>
                         <p id="profileDriverPhone">Telefon: -</p>
                         <p id="profileDriverCar">Mashina: -</p>
+                        <p>Reyting: ⭐⭐⭐⭐☆ (4.2)</p>
+                        <p>Jami buyurtmalar: 127</p>
                     </div>
                 </div>
                 
@@ -587,16 +850,37 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-driver" id="driverSupportBtn">
-                    <i class="fas fa-headset"></i>
-                    <span id="driverSupportText">Qo'llab-quvvatlash</span>
-                </button>
-                
-                <button class="btn btn-driver back-to-main" id="driverBackToMainBtn">
+                <button class="btn btn-secondary back-to-main" id="driverBackToMainBtn">
                     <i class="fas fa-home"></i>
                     <span id="driverBackToMainText">Asosiy menyuga qaytish</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Baholash modali -->
+    <div class="container hidden" id="ratingModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 90%; width: 400px; text-align: center;">
+            <h3>Safar bahosi</h3>
+            <p>Haydovchini baholang (1-5 yulduz)</p>
+            
+            <div class="rating-stars">
+                <div class="star" data-rating="1">⭐</div>
+                <div class="star" data-rating="2">⭐</div>
+                <div class="star" data-rating="3">⭐</div>
+                <div class="star" data-rating="4">⭐</div>
+                <div class="star" data-rating="5">⭐</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Izoh (ixtiyoriy)</label>
+                <textarea id="ratingComment" class="form-control" placeholder="Izoh qoldiring..." rows="3"></textarea>
+            </div>
+            
+            <button class="btn btn-success" id="submitRatingBtn">
+                <i class="fas fa-star"></i>
+                Bahoni yuborish
+            </button>
         </div>
     </div>
 
@@ -608,7 +892,9 @@
         let userData = {
             id: null,
             role: null,
-            language: 'uz'
+            language: 'uz',
+            currentOrder: null,
+            currentTrip: null
         };
         
         // Til matnlari
@@ -640,7 +926,7 @@
                 driverAdminTitle: "Admin bilan aloqa",
                 driverAdminSubtitle: "Savol va takliflaringiz bo'lsa",
                 driverContactAdminText: "Admin bilan bog'lanish",
-                ordersTitle: "Buyurtmalar",
+                ordersTitle: "Buyurtmalar tarixi",
                 ordersSubtitle: "Bajarilgan buyurtmalar",
                 driverProfileTitle: "Profil",
                 driverProfileSubtitle: "Shaxsiy ma'lumotlaringiz",
@@ -674,7 +960,7 @@
                 driverAdminTitle: "Связь с админом",
                 driverAdminSubtitle: "Если у вас есть вопросы или предложения",
                 driverContactAdminText: "Связаться с админом",
-                ordersTitle: "Заказы",
+                ordersTitle: "История заказов",
                 ordersSubtitle: "Выполненные заказы",
                 driverProfileTitle: "Профиль",
                 driverProfileSubtitle: "Ваши личные данные",
@@ -710,6 +996,9 @@
             
             // Event listenerlarni sozlash
             setupEventListeners();
+            
+            // Test ma'lumotlarni yuklash
+            loadTestData();
         });
 
         // Tilni sozlash
@@ -793,6 +1082,23 @@
             loadOrders();
         }
 
+        // Test ma'lumotlarni yuklash
+        function loadTestData() {
+            // GPS ma'lumotlari
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        console.log(`GPS: ${lat}, ${lng}`);
+                    },
+                    function(error) {
+                        console.log('GPS xatosi:', error);
+                    }
+                );
+            }
+        }
+
         // Event listenerlarni sozlash
         function setupEventListeners() {
             // Tab o'zgartirish
@@ -815,6 +1121,15 @@
                 method.addEventListener('click', function() {
                     document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
                     this.classList.add('active');
+                    
+                    const paymentMethod = this.getAttribute('data-method');
+                    const cardForm = document.getElementById('cardPaymentForm');
+                    
+                    if (paymentMethod === 'card') {
+                        cardForm.classList.remove('hidden');
+                    } else {
+                        cardForm.classList.add('hidden');
+                    }
                 });
             });
             
@@ -857,6 +1172,70 @@
             document.getElementById('driverBackToMainBtn').addEventListener('click', function() {
                 goToMainMenu();
             });
+            
+            document.getElementById('customerBackToMainBtn').addEventListener('click', function() {
+                goToMainMenu();
+            });
+            
+            document.getElementById('driverMainBackBtn').addEventListener('click', function() {
+                goToMainMenu();
+            });
+            
+            // Haydovchi harakatlari
+            document.getElementById('arrivedBtn').addEventListener('click', function() {
+                driverArrived();
+            });
+            
+            document.getElementById('startTripBtn').addEventListener('click', function() {
+                startTrip();
+            });
+            
+            document.getElementById('completeTripBtn').addEventListener('click', function() {
+                completeTrip();
+            });
+            
+            document.getElementById('cancelTripBtn').addEventListener('click', function() {
+                cancelTrip();
+            });
+            
+            document.getElementById('cancelOrderBtn').addEventListener('click', function() {
+                cancelOrder();
+            });
+            
+            // Baholash
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.getAttribute('data-rating');
+                    setRating(rating);
+                });
+            });
+            
+            document.getElementById('submitRatingBtn').addEventListener('click', function() {
+                submitRating();
+            });
+            
+            // Karta raqami formati
+            document.getElementById('cardNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 0) {
+                    value = value.match(/.{1,4}/g).join(' ');
+                }
+                e.target.value = value;
+            });
+            
+            // CVV formati
+            document.getElementById('cardCvv').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+            });
+            
+            // Amal qilish muddati formati
+            document.getElementById('cardExpiry').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
         }
 
         // Buyurtma yaratish
@@ -868,11 +1247,46 @@
             const paymentMethod = document.querySelector('.payment-method.active').getAttribute('data-method');
             
             if (!name || !phone || !from || !to) {
-                showNotification("Iltimos, barcha maydonlarni to'ldiring!");
+                showNotification("Iltimos, barcha maydonlarni to'ldiring!", 'error');
                 return;
             }
             
+            // Karta to'lovini tekshirish
+            if (paymentMethod === 'card') {
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                const cardExpiry = document.getElementById('cardExpiry').value;
+                const cardCvv = document.getElementById('cardCvv').value;
+                
+                if (!validateCard(cardNumber, cardExpiry, cardCvv)) {
+                    showNotification("Karta ma'lumotlari noto'g'ri! Iltimos, to'g'ri ma'lumotlar kiriting.", 'error');
+                    return;
+                }
+            }
+            
             showNotification("Buyurtmangiz qabul qilindi! Haydovchi topilmoqda...");
+            
+            // Faol buyurtma sahifasiga o'tish
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="active"]').classList.add('active');
+            document.getElementById('active-tab').classList.add('active');
+            
+            // Buyurtma ma'lumotlarini ko'rsatish
+            document.getElementById('activeFromLocation').textContent = from;
+            document.getElementById('activeToLocation').textContent = to;
+            document.getElementById('activePrice').textContent = "15,000 so'm";
+            
+            // Buyurtmani saqlash
+            userData.currentOrder = {
+                id: 'order_' + Date.now(),
+                name: name,
+                phone: phone,
+                from: from,
+                to: to,
+                paymentMethod: paymentMethod,
+                status: 'searching',
+                price: '15000'
+            };
             
             // Telegram botga ma'lumot yuborish
             if (window.Telegram && window.Telegram.WebApp) {
@@ -884,18 +1298,66 @@
                     from: from,
                     to: to,
                     payment_method: paymentMethod,
-                    language: userData.language
+                    language: userData.language,
+                    price: '15000'
                 }));
-            } else {
-                // Test rejimi
-                console.log('Buyurtma yaratildi:', { name, phone, from, to, paymentMethod });
-                addToHistory({ from, to, date: new Date().toLocaleString(), status: 'active' });
             }
+            
+            // 5 soniyadan keyin haydovchi topildi deb ko'rsatish (test)
+            setTimeout(() => {
+                document.getElementById('orderStatus').className = 'order-status status-accepted';
+                document.getElementById('orderStatus').textContent = '✅ Haydovchi topildi!';
+                document.getElementById('driverInfo').classList.remove('hidden');
+                document.getElementById('cancelOrderBtn').classList.remove('hidden');
+                
+                // Test haydovchi ma'lumotlari
+                document.getElementById('assignedDriverName').textContent = 'Akmal Joʻrayev';
+                document.getElementById('assignedDriverCar').textContent = 'Mashina: Nexia 3 | 01 A 123 AA';
+                document.getElementById('assignedDriverPhone').textContent = 'Telefon: +998901234567';
+            }, 5000);
+        }
+
+        // Karta ma'lumotlarini tekshirish
+        function validateCard(cardNumber, expiry, cvv) {
+            // Karta raqami tekshirish (16 raqam)
+            if (cardNumber.length !== 16) {
+                return false;
+            }
+            
+            // Amal qilish muddati (MM/YY)
+            const expiryRegex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+            if (!expiryRegex.test(expiry)) {
+                return false;
+            }
+            
+            // CVV tekshirish (3 raqam)
+            if (cvv.length !== 3) {
+                return false;
+            }
+            
+            // Luhn algoritmi (oddiy versiya)
+            let sum = 0;
+            for (let i = 0; i < cardNumber.length; i++) {
+                let digit = parseInt(cardNumber[i]);
+                if (i % 2 === 0) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+            }
+            
+            return sum % 10 === 0;
         }
 
         // Mijoz qidirish
         function findCustomer() {
             showNotification("Mijozlar qidirilmoqda...");
+            
+            // Faol buyurtma sahifasiga o'tish
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="driver-active"]').classList.add('active');
+            document.getElementById('driver-active-tab').classList.add('active');
             
             // Telegram botga so'rov yuborish
             if (window.Telegram && window.Telegram.WebApp) {
@@ -904,13 +1366,104 @@
                     user_id: userData.id,
                     language: userData.language
                 }));
-            } else {
-                // Test rejimi
-                console.log('Mijoz qidirish boshlandi');
-                setTimeout(() => {
-                    showNotification("Mijoz topildi! Buyurtma bering.");
-                }, 2000);
             }
+            
+            // Test ma'lumotlari
+            userData.currentTrip = {
+                customerName: "Ali Valiyev",
+                customerPhone: "+998901234567",
+                from: "Chorsu bozori",
+                to: "Amir Temur maydoni",
+                price: "15,000 so'm"
+            };
+        }
+
+        // Haydovchi yetib keldi
+        function driverArrived() {
+            showNotification("Mijozga yetib keldigingizni bildirdingiz");
+            document.getElementById('arrivedBtn').style.background = '#28a745';
+        }
+
+        // Safar boshlandi
+        function startTrip() {
+            showNotification("Safar boshlandi. Xavfsiz yo'l tilaymiz!");
+            document.getElementById('startTripBtn').style.background = '#28a745';
+            document.getElementById('tripActions').classList.remove('hidden');
+        }
+
+        // Safar yakunlandi
+        function completeTrip() {
+            showNotification("Safar muvaffaqiyatli yakunlandi!");
+            
+            // Baholash modali
+            document.getElementById('ratingModal').classList.remove('hidden');
+        }
+
+        // Safar bekor qilindi
+        function cancelTrip() {
+            if (confirm("Safarni bekor qilishni xohlaysizmi?")) {
+                showNotification("Safar bekor qilindi", 'warning');
+                // Asosiy sahifaga qaytish
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="driver-main"]').classList.add('active');
+                document.getElementById('driver-main-tab').classList.add('active');
+            }
+        }
+
+        // Buyurtma bekor qilish
+        function cancelOrder() {
+            if (confirm("Buyurtmani bekor qilishni xohlaysizmi?")) {
+                showNotification("Buyurtma bekor qilindi", 'warning');
+                // Taksi chaqirish sahifasiga qaytish
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="order"]').classList.add('active');
+                document.getElementById('order-tab').classList.add('active');
+            }
+        }
+
+        // Baholash
+        let selectedRating = 0;
+
+        function setRating(rating) {
+            selectedRating = rating;
+            document.querySelectorAll('.star').forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function submitRating() {
+            if (selectedRating === 0) {
+                showNotification("Iltimos, baho bering!", 'error');
+                return;
+            }
+
+            const comment = document.getElementById('ratingComment').value;
+            showNotification(`✅ ${selectedRating} yulduzli baho qo'yildi! Rahmat!`);
+            
+            // Baholash ma'lumotlarini yuborish
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg.sendData(JSON.stringify({
+                    action: 'submit_rating',
+                    user_id: userData.id,
+                    rating: selectedRating,
+                    comment: comment,
+                    driver_id: 'driver_123', // Test ma'lumot
+                    order_id: userData.currentOrder?.id
+                }));
+            }
+            
+            // Modalni yopish va asosiy sahifaga qaytish
+            document.getElementById('ratingModal').classList.add('hidden');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="order"]').classList.add('active');
+            document.getElementById('order-tab').classList.add('active');
         }
 
         // Admin bilan aloqa
@@ -940,14 +1493,15 @@
             } else {
                 // Test rejimi
                 showNotification("Asosiy menyuga qaytish");
+                // Bot manzilini o'zgartiring
                 window.location.href = 'https://t.me/your_bot_username';
             }
         }
 
         // Xabarnoma ko'rsatish
-        function showNotification(message) {
+        function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
-            notification.className = 'notification';
+            notification.className = `notification ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : ''}`;
             notification.textContent = message;
             document.body.appendChild(notification);
             
@@ -963,9 +1517,9 @@
             
             // Test ma'lumotlari
             const testHistory = [
-                { from: "Chorsu bozori", to: "Amir Temur maydoni", date: "2023-10-15 14:30", status: "completed" },
-                { from: "Toshkent markazi", to: "Havo terminali", date: "2023-10-10 09:15", status: "completed" },
-                { from: "Yunusobod", to: "Mirzo Ulug'bek", date: "2023-10-05 18:45", status: "completed" }
+                { from: "Chorsu bozori", to: "Amir Temur maydoni", date: "2023-10-15 14:30", status: "completed", price: "15,000 so'm" },
+                { from: "Toshkent markazi", to: "Havo terminali", date: "2023-10-10 09:15", status: "completed", price: "25,000 so'm" },
+                { from: "Yunusobod", to: "Mirzo Ulug'bek", date: "2023-10-05 18:45", status: "completed", price: "12,000 so'm" }
             ];
             
             historyList.innerHTML = '';
@@ -976,6 +1530,7 @@
                 historyItem.innerHTML = `
                     <h4>${item.from} → ${item.to}</h4>
                     <p>Sana: ${item.date}</p>
+                    <p>Narx: ${item.price}</p>
                     <p>Holat: ${item.status === 'completed' ? 'Bajarildi' : 'Faol'}</p>
                 `;
                 historyList.appendChild(historyItem);
@@ -989,9 +1544,9 @@
             
             // Test ma'lumotlari
             const testOrders = [
-                { from: "Chorsu bozori", to: "Amir Temur maydoni", date: "2023-10-15 14:30", price: "15,000 so'm" },
-                { from: "Toshkent markazi", to: "Havo terminali", date: "2023-10-10 09:15", price: "25,000 so'm" },
-                { from: "Yunusobod", to: "Mirzo Ulug'bek", date: "2023-10-05 18:45", price: "12,000 so'm" }
+                { from: "Chorsu bozori", to: "Amir Temur maydoni", date: "2023-10-15 14:30", price: "15,000 so'm", rating: 5 },
+                { from: "Toshkent markazi", to: "Havo terminali", date: "2023-10-10 09:15", price: "25,000 so'm", rating: 4 },
+                { from: "Yunusobod", to: "Mirzo Ulug'bek", date: "2023-10-05 18:45", price: "12,000 so'm", rating: 5 }
             ];
             
             ordersList.innerHTML = '';
@@ -1003,24 +1558,10 @@
                     <h4>${item.from} → ${item.to}</h4>
                     <p>Sana: ${item.date}</p>
                     <p>Narx: ${item.price}</p>
+                    <p>Baholash: ${'⭐'.repeat(item.rating)}</p>
                 `;
                 ordersList.appendChild(orderItem);
             });
-        }
-        
-        // Tarixga qo'shish
-        function addToHistory(order) {
-            const historyList = document.getElementById('historyList');
-            if (!historyList) return;
-            
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-                <h4>${order.from} → ${order.to}</h4>
-                <p>Sana: ${order.date}</p>
-                <p>Holat: ${order.status === 'completed' ? 'Bajarildi' : 'Faol'}</p>
-            `;
-            historyList.prepend(historyItem);
         }
 
         // Telegram WebApp dan kelgan ma'lumotlarni qayta ishlash
