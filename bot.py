@@ -245,7 +245,7 @@ async def role_selection(message: Message):
         role_text_ru = "Клиент"
     
     # WebApp URL
-    web_app_url = f"https://luxspeed-taksi.netlify.app/?user_id={user_id}&role={user_data['role']}&lang={language}"
+    WEBAPP_URL = "https://rasulovmuhiddin4-bit.github.io/luxspeed-bot/webapp/"
     
     if language == 'uz':
         success_text = f"✅ {role_text_uz} roli tanlandi!\n\n"
@@ -305,7 +305,7 @@ async def order_taxi(message: Message):
         return
     
     language = user_data['language']
-    web_app_url = f"https://luxspeed-taksi.netlify.app/?user_id={user_id}&role=customer&lang={language}"
+    WEBAPP_URL = "https://rasulovmuhiddin4-bit.github.io/luxspeed-bot/webapp/"
     
     if language == 'uz':
         text = "🚖 Taksi chaqirish uchun to'liq interfeysga o'ting:"
@@ -331,7 +331,7 @@ async def find_customer(message: Message):
         return
     
     language = user_data['language']
-    web_app_url = f"https://luxspeed-taksi.netlify.app/?user_id={user_id}&role=driver&lang={language}"
+    WEBAPP_URL = "https://rasulovmuhiddin4-bit.github.io/luxspeed-bot/webapp/"
     
     if language == 'uz':
         text = "👥 Mijozlarni qidirish uchun to'liq interfeysga o'ting:"
