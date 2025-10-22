@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxspeed - Telegram Taksibot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #0088cc;
+            --secondary: #00cc88;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .driver-header {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            color: #333;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .content {
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        
+        .welcome {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .welcome h2 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .driver-welcome h2 {
+            color: #ff9900;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.2);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 0;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-driver {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            color: #333;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .map-container {
+            height: 200px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--gray);
+            position: relative;
+        }
+        
+        .driver-info {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .driver-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .customer-info {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--success);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .driver-tab.active {
+            border-bottom: 3px solid #ff9900;
+            color: #ff9900;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 90%;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .language-option {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .language-option.active {
+            border-color: var(--primary);
+            background: rgba(0, 136, 204, 0.1);
+        }
+        
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .payment-method {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .payment-method.active {
+            border-color: var(--primary);
+            background: rgba(0, 136, 204, 0.1);
+        }
+        
+        .admin-alert {
+            background: #ffebee;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--danger);
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Yuklash sahifasi -->
+    <div class="container" id="loadingContainer">
+        <div class="content">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <h3 id="loadingText">Yuklanmoqda...</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mijoz interfeysi -->
+    <div class="container" id="customerContainer" style="display: none;">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-taxi"></i>
+                Luxspeed Mijoz
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="order">Taksi chaqirish</div>
+            <div class="tab" data-tab="history">Tarix</div>
+            <div class="tab" data-tab="profile">Profil</div>
+        </div>
+        
+        <div class="content">
+            <!-- Taksi chaqirish -->
+            <div class="tab-content active" id="order-tab">
+                <div class="welcome">
+                    <h2 id="customerWelcome">Taksi chaqirish</h2>
+                    <p id="customerSubtitle">Quyidagi ma'lumotlarni to'ldiring</p>
+                </div>
+                
+                <div class="form-group">
+                    <label id="nameLabel">Ismingiz</label>
+                    <input type="text" id="customerName" class="form-control" placeholder="Ismingizni kiriting">
+                </div>
+                
+                <div class="form-group">
+                    <label id="phoneLabel">Telefon raqamingiz</label>
+                    <input type="tel" id="customerPhone" class="form-control" placeholder="+998 XX XXX XX XX">
+                </div>
+                
+                <div class="form-group">
+                    <label id="fromLabel">Qayerdan</label>
+                    <input type="text" id="fromLocation" class="form-control" placeholder="Manzilingiz">
+                </div>
+                
+                <div class="form-group">
+                    <label id="toLabel">Qayerga</label>
+                    <input type="text" id="toLocation" class="form-control" placeholder="Yo'nalishingiz">
+                </div>
+                
+                <div class="payment-methods">
+                    <div class="payment-method active" data-method="cash">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <p id="cashLabel">Naqd pul</p>
+                    </div>
+                    <div class="payment-method" data-method="card">
+                        <i class="fas fa-credit-card"></i>
+                        <p id="cardLabel">Karta</p>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <i class="fas fa-map-marker-alt" style="font-size: 40px; color: var(--primary);"></i>
+                    <p id="mapText">Joylashuv xaritasi</p>
+                </div>
+                
+                <button class="btn btn-success" id="orderBtn">
+                    <i class="fas fa-taxi"></i>
+                    <span id="orderText">Taksi chaqirish</span>
+                </button>
+                
+                <div class="admin-alert">
+                    <p id="adminAlertText">Rolni o'zgartirish uchun @ALoqa_admin1985 ga murojaat qiling</p>
+                </div>
+            </div>
+            
+            <!-- Tarix -->
+            <div class="tab-content" id="history-tab">
+                <div class="welcome">
+                    <h2 id="historyTitle">Buyurtmalar tarixi</h2>
+                    <p id="historySubtitle">Oldingi safarlaringiz</p>
+                </div>
+                <!-- Tarix bu yerda ko'rsatiladi -->
+            </div>
+            
+            <!-- Profil -->
+            <div class="tab-content" id="profile-tab">
+                <div class="welcome">
+                    <h2 id="profileTitle">Profil</h2>
+                    <p id="profileSubtitle">Shaxsiy ma'lumotlaringiz</p>
+                </div>
+                
+                <div class="driver-info">
+                    <div class="driver-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 id="userName">Foydalanuvchi</h4>
+                        <p id="userPhone">Telefon: -</p>
+                    </div>
+                </div>
+                
+                <div class="language-selector">
+                    <div class="language-option active" data-lang="uz">
+                        O'zbekcha
+                    </div>
+                    <div class="language-option" data-lang="ru">
+                        Русский
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" id="supportBtn">
+                    <i class="fas fa-headset"></i>
+                    <span id="supportText">Qo'llab-quvvatlash</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Haydovchi interfeysi -->
+    <div class="container" id="driverContainer" style="display: none;">
+        <div class="header driver-header">
+            <div class="logo">
+                <i class="fas fa-taxi"></i>
+                Luxspeed Haydovchi
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab driver-tab active" data-tab="driver-main">Asosiy</div>
+            <div class="tab driver-tab" data-tab="driver-orders">Buyurtmalar</div>
+            <div class="tab driver-tab" data-tab="driver-profile">Profil</div>
+        </div>
+        
+        <div class="content">
+            <!-- Asosiy -->
+            <div class="tab-content active" id="driver-main-tab">
+                <div class="welcome driver-welcome">
+                    <h2 id="driverWelcome">Haydovchi paneli</h2>
+                    <p id="driverSubtitle">Ishga tayyormisiz?</p>
+                </div>
+                
+                <div class="driver-info">
+                    <div class="driver-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 id="driverName">Haydovchi</h4>
+                        <p id="driverCar">Mashina: -</p>
+                        <p id="driverStatus">Holat: Faol</p>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <i class="fas fa-map-marker-alt" style="font-size: 40px; color: #ff9900;"></i>
+                    <p id="driverMapText">Joylashuv xaritasi</p>
+                </div>
+                
+                <button class="btn btn-driver" id="findCustomerBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span id="findCustomerText">Mijoz qidirish</span>
+                </button>
+                
+                <div class="admin-alert">
+                    <p id="driverAdminAlert">Rolni o'zgartirish uchun @ALoqa_admin1985 ga murojaat qiling</p>
+                </div>
+            </div>
+            
+            <!-- Buyurtmalar -->
+            <div class="tab-content" id="driver-orders-tab">
+                <div class="welcome driver-welcome">
+                    <h2 id="ordersTitle">Buyurtmalar</h2>
+                    <p id="ordersSubtitle">Bajarilgan buyurtmalar</p>
+                </div>
+                <!-- Buyurtmalar bu yerda ko'rsatiladi -->
+            </div>
+            
+            <!-- Profil -->
+            <div class="tab-content" id="driver-profile-tab">
+                <div class="welcome driver-welcome">
+                    <h2 id="driverProfileTitle">Profil</h2>
+                    <p id="driverProfileSubtitle">Shaxsiy ma'lumotlaringiz</p>
+                </div>
+                
+                <div class="driver-info">
+                    <div class="driver-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 id="profileDriverName">Haydovchi</h4>
+                        <p id="profileDriverPhone">Telefon: -</p>
+                        <p id="profileDriverCar">Mashina: -</p>
+                    </div>
+                </div>
+                
+                <div class="language-selector">
+                    <div class="language-option active" data-lang="uz">
+                        O'zbekcha
+                    </div>
+                    <div class="language-option" data-lang="ru">
+                        Русский
+                    </div>
+                </div>
+                
+                <button class="btn btn-driver" id="driverSupportBtn">
+                    <i class="fas fa-headset"></i>
+                    <span id="driverSupportText">Qo'llab-quvvatlash</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Foydalanuvchi ma'lumotlari
+        let userData = {
+            id: null,
+            role: null,
+            language: 'uz'
+        };
+        
+        // Til matnlari
+        const translations = {
+            uz: {
+                loading: "Yuklanmoqda...",
+                customerWelcome: "Taksi chaqirish",
+                customerSubtitle: "Quyidagi ma'lumotlarni to'ldiring",
+                nameLabel: "Ismingiz",
+                phoneLabel: "Telefon raqamingiz",
+                fromLabel: "Qayerdan",
+                toLabel: "Qayerga",
+                cashLabel: "Naqd pul",
+                cardLabel: "Karta",
+                mapText: "Joylashuv xaritasi",
+                orderText: "Taksi chaqirish",
+                adminAlert: "Rolni o'zgartirish uchun @ALoqa_admin1985 ga murojaat qiling",
+                historyTitle: "Buyurtmalar tarixi",
+                historySubtitle: "Oldingi safarlaringiz",
+                profileTitle: "Profil",
+                profileSubtitle: "Shaxsiy ma'lumotlaringiz",
+                supportText: "Qo'llab-quvvatlash",
+                driverWelcome: "Haydovchi paneli",
+                driverSubtitle: "Ishga tayyormisiz?",
+                findCustomerText: "Mijoz qidirish",
+                driverAdminAlert: "Rolni o'zgartirish uchun @ALoqa_admin1985 ga murojaat qiling",
+                ordersTitle: "Buyurtmalar",
+                ordersSubtitle: "Bajarilgan buyurtmalar",
+                driverProfileTitle: "Profil",
+                driverProfileSubtitle: "Shaxsiy ma'lumotlaringiz",
+                driverSupportText: "Qo'llab-quvvatlash"
+            },
+            ru: {
+                loading: "Загрузка...",
+                customerWelcome: "Вызов такси",
+                customerSubtitle: "Заполните следующие данные",
+                nameLabel: "Ваше имя",
+                phoneLabel: "Ваш телефон",
+                fromLabel: "Откуда",
+                toLabel: "Куда",
+                cashLabel: "Наличные",
+                cardLabel: "Карта",
+                mapText: "Карта местоположения",
+                orderText: "Вызвать такси",
+                adminAlert: "Для смены роли обратитесь к @ALoqa_admin1985",
+                historyTitle: "История заказов",
+                historySubtitle: "Ваши предыдущие поездки",
+                profileTitle: "Профиль",
+                profileSubtitle: "Ваши личные данные",
+                supportText: "Поддержка",
+                driverWelcome: "Панель водителя",
+                driverSubtitle: "Готовы к работе?",
+                findCustomerText: "Поиск клиентов",
+                driverAdminAlert: "Для смены роли обратитесь к @ALoqa_admin1985",
+                ordersTitle: "Заказы",
+                ordersSubtitle: "Выполненные заказы",
+                driverProfileTitle: "Профиль",
+                driverProfileSubtitle: "Ваши личные данные",
+                driverSupportText: "Поддержка"
+            }
+        };
+
+        // Dastur ishga tushganda
+        document.addEventListener('DOMContentLoaded', function() {
+            tg.ready();
+            tg.expand();
+            
+            // URL parametrlarini o'qish
+            const urlParams = new URLSearchParams(window.location.search);
+            userData.id = urlParams.get('user_id');
+            userData.role = urlParams.get('role');
+            
+            // Tilni sozlash
+            setupLanguage();
+            
+            // Interfeysni yuklash
+            loadInterface();
+            
+            // Event listenerlarni sozlash
+            setupEventListeners();
+        });
+
+        // Tilni sozlash
+        function setupLanguage() {
+            // Hozircha faqat o'zbek tilini qo'llaymiz
+            userData.language = 'uz';
+            applyTranslations();
+        }
+
+        // Tarjimalarni qo'llash
+        function applyTranslations() {
+            const lang = userData.language;
+            const texts = translations[lang];
+            
+            for (const [key, value] of Object.entries(texts)) {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+        }
+
+        // Interfeysni yuklash
+        function loadInterface() {
+            const loadingContainer = document.getElementById('loadingContainer');
+            const customerContainer = document.getElementById('customerContainer');
+            const driverContainer = document.getElementById('driverContainer');
+            
+            // Yuklashni yashirish
+            setTimeout(() => {
+                loadingContainer.style.display = 'none';
+                
+                // Rolga qarab interfeysni ko'rsatish
+                if (userData.role === 'customer') {
+                    customerContainer.style.display = 'block';
+                    setupCustomerInterface();
+                } else if (userData.role === 'driver') {
+                    driverContainer.style.display = 'block';
+                    setupDriverInterface();
+                }
+            }, 2000);
+        }
+
+        // Mijoz interfeysini sozlash
+        function setupCustomerInterface() {
+            // Foydalanuvchi ma'lumotlarini to'ldirish
+            document.getElementById('userName').textContent = tg.initDataUnsafe.user?.first_name || 'Foydalanuvchi';
+        }
+
+        // Haydovchi interfeysini sozlash
+        function setupDriverInterface() {
+            // Haydovchi ma'lumotlarini to'ldirish
+            document.getElementById('driverName').textContent = tg.initDataUnsafe.user?.first_name || 'Haydovchi';
+            document.getElementById('profileDriverName').textContent = tg.initDataUnsafe.user?.first_name || 'Haydovchi';
+        }
+
+        // Event listenerlarni sozlash
+        function setupEventListeners() {
+            // Tab o'zgartirish
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Barcha tab va kontentlarni yopish
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Faol tab va kontentni ko'rsatish
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // To'lov usulini tanlash
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Tilni tanlash
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.language-option').forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    userData.language = this.getAttribute('data-lang');
+                    applyTranslations();
+                    showNotification("Til o'zgartirildi");
+                });
+            });
+            
+            // Taksi chaqirish
+            document.getElementById('orderBtn').addEventListener('click', function() {
+                createOrder();
+            });
+            
+            // Mijoz qidirish
+            document.getElementById('findCustomerBtn').addEventListener('click', function() {
+                findCustomer();
+            });
+            
+            // Qo'llab-quvvatlash
+            document.getElementById('supportBtn').addEventListener('click', function() {
+                contactSupport();
+            });
+            
+            document.getElementById('driverSupportBtn').addEventListener('click', function() {
+                contactSupport();
+            });
+        }
+
+        // Buyurtma yaratish
+        function createOrder() {
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const from = document.getElementById('fromLocation').value;
+            const to = document.getElementById('toLocation').value;
+            const paymentMethod = document.querySelector('.payment-method.active').getAttribute('data-method');
+            
+            if (!name || !phone || !from || !to) {
+                showNotification("Iltimos, barcha maydonlarni to'ldiring!");
+                return;
+            }
+            
+            showNotification("Buyurtmangiz qabul qilindi! Haydovchi topilmoqda...");
+            
+            // Telegram botga ma'lumot yuborish
+            tg.sendData(JSON.stringify({
+                action: 'create_order',
+                user_id: userData.id,
+                name: name,
+                phone: phone,
+                from: from,
+                to: to,
+                payment_method: paymentMethod,
+                language: userData.language
+            }));
+        }
+
+        // Mijoz qidirish
+        function findCustomer() {
+            showNotification("Mijozlar qidirilmoqda...");
+            
+            // Telegram botga so'rov yuborish
+            tg.sendData(JSON.stringify({
+                action: 'find_customer',
+                user_id: userData.id,
+                language: userData.language
+            }));
+        }
+
+        // Qo'llab-quvvatlash
+        function contactSupport() {
+            tg.openTelegramLink('https://t.me/ALoqa_admin1985');
+        }
+
+        // Xabarnoma ko'rsatish
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Telegram WebApp dan kelgan ma'lumotlarni qayta ishlash
+        tg.onEvent('viewportChanged', function() {
+            tg.expand();
+        });
+    </script>
+</body>
+</html>
